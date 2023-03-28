@@ -97,9 +97,11 @@ function start!(watcher::RAMWatcher)
             telapsed = (time_ns() - tstart) / 10^9
             to_sleep = watcher.sampling_interval_s[] - telapsed
             to_sleep < 0.004 ? yield() : sleep(to_sleep)
-            free_memory = Sys.free_memory() / 10^9
+            free = Sys.free_memory()
+            total = Sys.total_memory()
+            used_memory = (total - free) / 10^9
             tstart = time_ns()
-            watcher.value[] = free_memory
+            watcher.value[] = used_memory
         end
     end
 end
@@ -140,7 +142,23 @@ diagnostic_app = App(title="Diagnostic") do session
     # bind global observable to session lifecycle
     chist = map(identity, session, cpu_history)
     rhist = map(identity, session, ram_history)
-    fig, ax, pl = heatmap(chist; axis=(; ylabel="%", title="CPU usage"), colormap=[:green, :yellow, :red], colorrange=(0, 100))
-    barplot(fig[2, 1], rhist; axis=(; ylabel="Gb", title="RAM usage", limits=(nothing, nothing, 0, Sys.total_memory()/10^9)))
-    return DOM.div(fig)
-end
+    total = round(Sys.total_memory() / 10^9; digits=2)
+    fig = Figure()
+    plots = fig[1, 1]
+    band(plots[1, 1], 1:length(rhist[]), 0, rhist;
+        color=rhist,
+        colormap=[:green, :yellow, :red], colorrange=(0, total),
+        axis=(;
+            ylabel="Percent of $(total)Gb",
+            title="RAM usage",
+            limits=(nothing, nothing, 0, total)
+        )
+    )
+
+    ax, pl = heatmap(plots[2, 1], chist;
+        axis=(; ylabel="%", title="CPU usage", yticks=0:size(chist[], 2)),
+        colormap=[:green, :yellow, :red], colorrange=(0, 100)
+    )
+    Colorbar(fig[1, 2], pl; label="Usage in %")
+    return Site(DOM.div(fig), "Diagnostic", "Diagnostic")
+end;

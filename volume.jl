@@ -1,4 +1,4 @@
-volume_app = App(title="Volume") do session::Session
+volume_app = App(title="Volume", threaded=true) do session::Session
     algorithms = ["mip", "iso", "absorption"]
     algorithm = Observable(first(algorithms))
     algorithm_drop = D.Dropdown("Algorithm", algorithms)
@@ -34,8 +34,7 @@ volume_app = App(title="Volume") do session::Session
         colorrange=(-0.2, 2))
 
     heat = heatmap(fig[1, 2], slice, colormap=cmap.value, colorrange=(-0.2, 2))
-
-    return D.FlexRow(
+    dom = D.FlexRow(
         D.Card(D.FlexCol(
             data_slider,
             iso_value,
@@ -45,4 +44,5 @@ volume_app = App(title="Volume") do session::Session
         )),
         D.Card(fig)
     )
-end
+    return Site(dom, "Volume", "Simple Volume Demo")
+end;

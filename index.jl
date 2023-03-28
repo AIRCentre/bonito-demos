@@ -22,8 +22,8 @@ function app_card(app)
     )
 end
 
-index_app = App() do
-    cards = app_card.([volume_app, signal_filtering_app, diagnostic_app])
+index_app = App(threaded=true) do
+    cards = app_card.([volume_app, signal_filtering_app, diagnostic_app, clima_app])
     return DOM.div(
         DOM.h1("Bonito Demos:"),
         D.FlexRow(cards...)

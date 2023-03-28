@@ -296,7 +296,7 @@ h2 {
 }
 """)
 
-signal_filtering_app = App(title="Signal Filtering") do session
+signal_filtering_app = App(title="Signal Filtering", threaded=true) do session
     selection_function = D.Dropdown("Function", [erp, unit_impulse, step_function, sinusoidal_pulse], index=1)
     selection_filter = D.Dropdown("Filter", ["Lowpass", "Highpass", "Bandpass", "Bandstop"], index=3)
     selection_method = D.Dropdown("Method", ["FIR causal", "FIR acausal","Butterworth", "Chebychev1"], index=2)
@@ -336,5 +336,6 @@ signal_filtering_app = App(title="Signal Filtering") do session
         D.FlexCol(plot1(response), plot2(response))
     end
     dom = D.Card(D.FlexRow(ui, D.Card(plots)); style="background-color: #1A1A1A")
-    return DOM.div(JSServe.Asset("app.css"), dom)
-end
+    footer = DOM.div("cc-by Luis Lips & Benedikt Ehinger / MIT ", DOM.a("github.com/s-ccs/interactive-pluto-notebooks", href="https://github.com/s-ccs/interactive-pluto-notebooks"))
+    return Site(DOM.div(JSServe.Asset("app.css"), dom), "Signal Filtering", footer)
+end;
